@@ -332,3 +332,6 @@ ASALocalRun/
 !DS4Windows/libs/x64/
 !DS4Windows/libs/x86/
 
+
+# Local diagnostics/probe tooling (not part of the app)
+OUT/

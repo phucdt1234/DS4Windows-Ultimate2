@@ -42,6 +42,13 @@ namespace DS4WindowsTests
   <idleDisconnectTimeout>0</idleDisconnectTimeout>
   <outputDataToDS4>True</outputDataToDS4>
   <Color>0,0,255</Color>
+  <LeftStickDriftXAxis>0</LeftStickDriftXAxis>
+  <LeftStickDriftYAxis>0</LeftStickDriftYAxis>
+  <RightStickDriftXAxis>0</RightStickDriftXAxis>
+  <RightStickDriftYAxis>0</RightStickDriftYAxis>
+  <DebouncingMs>0</DebouncingMs>
+  <InverseRumbleMotors>false</InverseRumbleMotors>
+  <UseDs3PitchRollSim>false</UseDs3PitchRollSim>
   <RumbleBoost>100</RumbleBoost>
   <RumbleAutostopTime>0</RumbleAutostopTime>
   <LightbarMode>DS4Win</LightbarMode>
@@ -129,6 +136,54 @@ namespace DS4WindowsTests
     <EasingDuration>0.2</EasingDuration>
     <MinFactor>1</MinFactor>
   </RSDeltaAccelSettings>
+  <SpecialAimSettings>
+    <Enabled>False</Enabled>
+    <LeftStick>
+      <Enabled>False</Enabled>
+      <DeadzoneInner>0</DeadzoneInner>
+      <DeadzoneOuter>0</DeadzoneOuter>
+      <CurveEnabled>False</CurveEnabled>
+      <CurveType>0</CurveType>
+      <CurvePower>1</CurvePower>
+      <CurveP1X>0.33</CurveP1X>
+      <CurveP1Y>0.33</CurveP1Y>
+      <CurveP2X>0.67</CurveP2X>
+      <CurveP2Y>0.67</CurveP2Y>
+      <FilterEnabled>False</FilterEnabled>
+      <FilterAlpha>0.5</FilterAlpha>
+      <JitterEnabled>False</JitterEnabled>
+      <JitterRadius>0.01</JitterRadius>
+      <JitterFrequency>20</JitterFrequency>
+      <JitterThreshold>1</JitterThreshold>
+    </LeftStick>
+    <RightStick>
+      <Enabled>False</Enabled>
+      <DeadzoneInner>0</DeadzoneInner>
+      <DeadzoneOuter>0</DeadzoneOuter>
+      <CurveEnabled>False</CurveEnabled>
+      <CurveType>0</CurveType>
+      <CurvePower>1</CurvePower>
+      <CurveP1X>0.33</CurveP1X>
+      <CurveP1Y>0.33</CurveP1Y>
+      <CurveP2X>0.67</CurveP2X>
+      <CurveP2Y>0.67</CurveP2Y>
+      <FilterEnabled>False</FilterEnabled>
+      <FilterAlpha>0.5</FilterAlpha>
+      <JitterEnabled>False</JitterEnabled>
+      <JitterRadius>0.01</JitterRadius>
+      <JitterFrequency>20</JitterFrequency>
+      <JitterThreshold>1</JitterThreshold>
+    </RightStick>
+    <Recoil>
+      <Enabled>False</Enabled>
+      <CompensationX>0</CompensationX>
+      <CompensationY>0</CompensationY>
+      <PullStrength>1</PullStrength>
+      <PullRate>2</PullRate>
+      <TriggerThreshold>0.3</TriggerThreshold>
+      <TriggerSource>1</TriggerSource>
+    </Recoil>
+  </SpecialAimSettings>
   <SXDeadZone>0.25</SXDeadZone>
   <SZDeadZone>0.25</SZDeadZone>
   <SXMaxZone>100</SXMaxZone>

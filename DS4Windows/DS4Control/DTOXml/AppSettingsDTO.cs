@@ -894,6 +894,10 @@ namespace DS4WinWPF.DS4Control.DTOXml
                 {
                     Enabled = source.deviceOptions.SwitchProDeviceOpts.Enabled,
                 },
+                EightBitDoDInputSupportSettings = new EightBitDoDInputSupportSettings()
+                {
+                    Enabled = source.deviceOptions.EightBitDoDInputOpts.Enabled,
+                },
                 JoyConSupportSettings = new JoyConSupportSettings()
                 {
                     Enabled = source.deviceOptions.JoyConDeviceOpts.Enabled,
@@ -990,6 +994,7 @@ namespace DS4WinWPF.DS4Control.DTOXml
             destination.deviceOptions.DS4DeviceOpts.Enabled = DeviceOptions.DS4SupportSettings.Enabled;
             destination.deviceOptions.DualSenseOpts.Enabled = DeviceOptions.DualSenseSupportSettings.Enabled;
             destination.deviceOptions.SwitchProDeviceOpts.Enabled = DeviceOptions.SwitchProSupportSettings.Enabled;
+            destination.deviceOptions.EightBitDoDInputOpts.Enabled = DeviceOptions.EightBitDoDInputSupportSettings.Enabled;
             destination.deviceOptions.JoyConDeviceOpts.Enabled = DeviceOptions.JoyConSupportSettings.Enabled;
             destination.deviceOptions.JoyConDeviceOpts.LinkedMode = DeviceOptions.JoyConSupportSettings.LinkMode;
             destination.deviceOptions.JoyConDeviceOpts.JoinGyroProv = DeviceOptions.JoyConSupportSettings.JoinedGyroProvider;
@@ -1058,6 +1063,11 @@ namespace DS4WinWPF.DS4Control.DTOXml
             get; set;
         } = new SwitchProSupportSettings();
 
+        public EightBitDoDInputSupportSettings EightBitDoDInputSupportSettings
+        {
+            get; set;
+        } = new EightBitDoDInputSupportSettings();
+
         public JoyConSupportSettings JoyConSupportSettings
         {
             get; set;
@@ -1120,6 +1130,14 @@ namespace DS4WinWPF.DS4Control.DTOXml
         public SwitchProSupportSettings() : base()
         {
             Enabled = SwitchProDeviceOptions.DEFAULT_ENABLE;
+        }
+    }
+
+    public class EightBitDoDInputSupportSettings : BaseInputDeviceSettingsGroup
+    {
+        public EightBitDoDInputSupportSettings() : base()
+        {
+            Enabled = EightBitDoDInputDeviceOptions.DEFAULT_ENABLE;
         }
     }
 

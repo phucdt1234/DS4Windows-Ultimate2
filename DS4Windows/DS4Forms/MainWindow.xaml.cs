@@ -1400,10 +1400,19 @@ Suspend support not enabled.", true);
 
             // Log exceptions that might occur
             Util.LogAssistBackgroundTask(serviceTask);
-            await serviceTask;
-
-            hideDS4ContCk.IsEnabled = true;
-            StartStopBtn.IsEnabled = true;
+            try
+            {
+                await serviceTask;
+            }
+            catch (Exception exc)
+            {
+                AppLogger.LogToGui($"Failed to restart the service while toggling controller hiding. {exc.Message}", true);
+            }
+            finally
+            {
+                hideDS4ContCk.IsEnabled = true;
+                StartStopBtn.IsEnabled = true;
+            }
         }
 
         private void UseOscServerCk_Click(object sender, RoutedEventArgs e)

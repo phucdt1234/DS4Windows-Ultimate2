@@ -32,7 +32,8 @@ namespace DS4Windows.InputDevices
         JoyConR,
         JoyConGrip,
         DualSense,
-        DS3
+        DS3,
+        EightBitDoDInput
     }
 
     public abstract class InputDeviceFactory
@@ -60,6 +61,9 @@ namespace DS4Windows.InputDevices
                     break;
                 case InputDeviceType.DS3:
                     temp = new DS3Device(hidDevice, disName, featureSet);
+                    break;
+                case InputDeviceType.EightBitDoDInput:
+                    temp = new EightBitDoDInputDevice(hidDevice, disName, featureSet);
                     break;
             }
 

@@ -655,6 +655,12 @@ namespace DS4WinWPF.DS4Control.DTOXml
             get; set;
         }
 
+        [XmlElement("SpecialAimSettings")]
+        public SpecialAimSettingsGroup SpecialAimSettings
+        {
+            get; set;
+        } = new SpecialAimSettingsGroup();
+
         private double _sXDeadZone = BackingStore.DEFAULT_SX_TILT_DEADZONE;
         [XmlElement("SXDeadZone")]
         public double SXDeadZone
@@ -1566,6 +1572,23 @@ namespace DS4WinWPF.DS4Control.DTOXml
                 MinFactor = source.lsOutputSettings[deviceIndex].outputSettings.controlSettings.deltaAccelSettings.minfactor,
             };
 
+            SpecialAimSettings = new SpecialAimSettingsGroup()
+            {
+                Enabled = source.specialAimSettings[deviceIndex].enabled,
+                LeftStick = MapSpecialAimStick(source.specialAimSettings[deviceIndex].leftStick),
+                RightStick = MapSpecialAimStick(source.specialAimSettings[deviceIndex].rightStick),
+                Recoil = new SpecialAimRecoilGroup()
+                {
+                    Enabled = source.specialAimSettings[deviceIndex].recoil.enabled,
+                    CompensationX = source.specialAimSettings[deviceIndex].recoil.compensationX,
+                    CompensationY = source.specialAimSettings[deviceIndex].recoil.compensationY,
+                    PullStrength = source.specialAimSettings[deviceIndex].recoil.pullStrength,
+                    PullRate = source.specialAimSettings[deviceIndex].recoil.pullRate,
+                    TriggerThreshold = source.specialAimSettings[deviceIndex].recoil.triggerThreshold,
+                    TriggerSource = source.specialAimSettings[deviceIndex].recoil.triggerSource,
+                },
+            };
+
             RSDeadZoneType = source.rsModInfo[deviceIndex].deadzoneType;
             RSAxialDeadOptions = new StickAxialDeadOptionsSerializer()
             {
@@ -1984,6 +2007,29 @@ namespace DS4WinWPF.DS4Control.DTOXml
             }
         }
 
+        private static SpecialAimStickGroup MapSpecialAimStick(SpecialAimStickSettings source)
+        {
+            return new SpecialAimStickGroup()
+            {
+                Enabled = source.enabled,
+                DeadzoneInner = source.deadzoneInner,
+                DeadzoneOuter = source.deadzoneOuter,
+                CurveEnabled = source.curveEnabled,
+                CurveType = source.curveType,
+                CurvePower = source.curvePower,
+                CurveP1X = source.curveP1X,
+                CurveP1Y = source.curveP1Y,
+                CurveP2X = source.curveP2X,
+                CurveP2Y = source.curveP2Y,
+                FilterEnabled = source.filterEnabled,
+                FilterAlpha = source.filterAlpha,
+                JitterEnabled = source.jitterEnabled,
+                JitterRadius = source.jitterRadius,
+                JitterFrequency = source.jitterFrequency,
+                JitterThreshold = source.jitterThreshold,
+            };
+        }
+
         public void MapTo(BackingStore destination)
         {
             if (deviceIndex == -1)
@@ -2086,6 +2132,62 @@ namespace DS4WinWPF.DS4Control.DTOXml
                 destination.lsOutputSettings[deviceIndex].outputSettings.controlSettings.deltaAccelSettings.minTravel = LSDeltaAccelSettings.MinTravel;
                 destination.lsOutputSettings[deviceIndex].outputSettings.controlSettings.deltaAccelSettings.easingDuration = LSDeltaAccelSettings.EasingDuration;
                 destination.lsOutputSettings[deviceIndex].outputSettings.controlSettings.deltaAccelSettings.minfactor = LSDeltaAccelSettings.MinFactor;
+            }
+
+            if (SpecialAimSettings != null)
+            {
+                SpecialAimSettings specialAim = destination.specialAimSettings[deviceIndex];
+                specialAim.enabled = SpecialAimSettings.Enabled;
+                if (SpecialAimSettings.LeftStick != null)
+                {
+                    specialAim.leftStick.enabled = SpecialAimSettings.LeftStick.Enabled;
+                    specialAim.leftStick.deadzoneInner = SpecialAimSettings.LeftStick.DeadzoneInner;
+                    specialAim.leftStick.deadzoneOuter = SpecialAimSettings.LeftStick.DeadzoneOuter;
+                    specialAim.leftStick.curveEnabled = SpecialAimSettings.LeftStick.CurveEnabled;
+                    specialAim.leftStick.curveType = SpecialAimSettings.LeftStick.CurveType;
+                    specialAim.leftStick.curvePower = SpecialAimSettings.LeftStick.CurvePower;
+                    specialAim.leftStick.curveP1X = SpecialAimSettings.LeftStick.CurveP1X;
+                    specialAim.leftStick.curveP1Y = SpecialAimSettings.LeftStick.CurveP1Y;
+                    specialAim.leftStick.curveP2X = SpecialAimSettings.LeftStick.CurveP2X;
+                    specialAim.leftStick.curveP2Y = SpecialAimSettings.LeftStick.CurveP2Y;
+                    specialAim.leftStick.filterEnabled = SpecialAimSettings.LeftStick.FilterEnabled;
+                    specialAim.leftStick.filterAlpha = SpecialAimSettings.LeftStick.FilterAlpha;
+                    specialAim.leftStick.jitterEnabled = SpecialAimSettings.LeftStick.JitterEnabled;
+                    specialAim.leftStick.jitterRadius = SpecialAimSettings.LeftStick.JitterRadius;
+                    specialAim.leftStick.jitterFrequency = SpecialAimSettings.LeftStick.JitterFrequency;
+                    specialAim.leftStick.jitterThreshold = SpecialAimSettings.LeftStick.JitterThreshold;
+                }
+
+                if (SpecialAimSettings.RightStick != null)
+                {
+                    specialAim.rightStick.enabled = SpecialAimSettings.RightStick.Enabled;
+                    specialAim.rightStick.deadzoneInner = SpecialAimSettings.RightStick.DeadzoneInner;
+                    specialAim.rightStick.deadzoneOuter = SpecialAimSettings.RightStick.DeadzoneOuter;
+                    specialAim.rightStick.curveEnabled = SpecialAimSettings.RightStick.CurveEnabled;
+                    specialAim.rightStick.curveType = SpecialAimSettings.RightStick.CurveType;
+                    specialAim.rightStick.curvePower = SpecialAimSettings.RightStick.CurvePower;
+                    specialAim.rightStick.curveP1X = SpecialAimSettings.RightStick.CurveP1X;
+                    specialAim.rightStick.curveP1Y = SpecialAimSettings.RightStick.CurveP1Y;
+                    specialAim.rightStick.curveP2X = SpecialAimSettings.RightStick.CurveP2X;
+                    specialAim.rightStick.curveP2Y = SpecialAimSettings.RightStick.CurveP2Y;
+                    specialAim.rightStick.filterEnabled = SpecialAimSettings.RightStick.FilterEnabled;
+                    specialAim.rightStick.filterAlpha = SpecialAimSettings.RightStick.FilterAlpha;
+                    specialAim.rightStick.jitterEnabled = SpecialAimSettings.RightStick.JitterEnabled;
+                    specialAim.rightStick.jitterRadius = SpecialAimSettings.RightStick.JitterRadius;
+                    specialAim.rightStick.jitterFrequency = SpecialAimSettings.RightStick.JitterFrequency;
+                    specialAim.rightStick.jitterThreshold = SpecialAimSettings.RightStick.JitterThreshold;
+                }
+
+                if (SpecialAimSettings.Recoil != null)
+                {
+                    specialAim.recoil.enabled = SpecialAimSettings.Recoil.Enabled;
+                    specialAim.recoil.compensationX = SpecialAimSettings.Recoil.CompensationX;
+                    specialAim.recoil.compensationY = SpecialAimSettings.Recoil.CompensationY;
+                    specialAim.recoil.pullStrength = SpecialAimSettings.Recoil.PullStrength;
+                    specialAim.recoil.pullRate = SpecialAimSettings.Recoil.PullRate;
+                    specialAim.recoil.triggerThreshold = SpecialAimSettings.Recoil.TriggerThreshold;
+                    specialAim.recoil.triggerSource = SpecialAimSettings.Recoil.TriggerSource;
+                }
             }
 
             destination.rsModInfo[deviceIndex].deadzoneType = RSDeadZoneType;
@@ -2760,6 +2862,261 @@ namespace DS4WinWPF.DS4Control.DTOXml
         {
             get => _maxOutputY;
             set => _maxOutputY = Math.Clamp(value, 0.0, 100.0);
+        }
+    }
+
+    public class SpecialAimSettingsGroup
+    {
+        private bool _enabled;
+        [XmlIgnore]
+        public bool Enabled
+        {
+            get => _enabled;
+            set => _enabled = value;
+        }
+        [XmlElement("Enabled")]
+        public string EnabledString
+        {
+            get => _enabled.ToString();
+            set => _enabled = XmlDataUtilities.StrToBool(value);
+        }
+
+        [XmlElement("LeftStick")]
+        public SpecialAimStickGroup LeftStick
+        {
+            get; set;
+        } = new SpecialAimStickGroup();
+
+        [XmlElement("RightStick")]
+        public SpecialAimStickGroup RightStick
+        {
+            get; set;
+        } = new SpecialAimStickGroup();
+
+        [XmlElement("Recoil")]
+        public SpecialAimRecoilGroup Recoil
+        {
+            get; set;
+        } = new SpecialAimRecoilGroup();
+    }
+
+    public class SpecialAimStickGroup
+    {
+        private bool _enabled;
+        [XmlIgnore]
+        public bool Enabled
+        {
+            get => _enabled;
+            set => _enabled = value;
+        }
+        [XmlElement("Enabled")]
+        public string EnabledString
+        {
+            get => _enabled.ToString();
+            set => _enabled = XmlDataUtilities.StrToBool(value);
+        }
+
+        private double _deadzoneInner;
+        [XmlElement("DeadzoneInner")]
+        public double DeadzoneInner
+        {
+            get => _deadzoneInner;
+            set => _deadzoneInner = Math.Clamp(value, 0.0, 1.0);
+        }
+
+        private double _deadzoneOuter;
+        [XmlElement("DeadzoneOuter")]
+        public double DeadzoneOuter
+        {
+            get => _deadzoneOuter;
+            set => _deadzoneOuter = Math.Clamp(value, 0.0, 1.0);
+        }
+
+        private bool _curveEnabled;
+        [XmlIgnore]
+        public bool CurveEnabled
+        {
+            get => _curveEnabled;
+            set => _curveEnabled = value;
+        }
+        [XmlElement("CurveEnabled")]
+        public string CurveEnabledString
+        {
+            get => _curveEnabled.ToString();
+            set => _curveEnabled = XmlDataUtilities.StrToBool(value);
+        }
+
+        private int _curveType;
+        [XmlElement("CurveType")]
+        public int CurveType
+        {
+            get => _curveType;
+            set => _curveType = Math.Clamp(value, 0, 3);
+        }
+
+        private double _curvePower = 1.0;
+        [XmlElement("CurvePower")]
+        public double CurvePower
+        {
+            get => _curvePower;
+            set => _curvePower = Math.Clamp(value, 0.1, 10.0);
+        }
+
+        private double _curveP1X = 0.33;
+        [XmlElement("CurveP1X")]
+        public double CurveP1X
+        {
+            get => _curveP1X;
+            set => _curveP1X = Math.Clamp(value, 0.0, 1.0);
+        }
+
+        private double _curveP1Y = 0.33;
+        [XmlElement("CurveP1Y")]
+        public double CurveP1Y
+        {
+            get => _curveP1Y;
+            set => _curveP1Y = Math.Clamp(value, 0.0, 1.0);
+        }
+
+        private double _curveP2X = 0.67;
+        [XmlElement("CurveP2X")]
+        public double CurveP2X
+        {
+            get => _curveP2X;
+            set => _curveP2X = Math.Clamp(value, 0.0, 1.0);
+        }
+
+        private double _curveP2Y = 0.67;
+        [XmlElement("CurveP2Y")]
+        public double CurveP2Y
+        {
+            get => _curveP2Y;
+            set => _curveP2Y = Math.Clamp(value, 0.0, 1.0);
+        }
+
+        private bool _filterEnabled;
+        [XmlIgnore]
+        public bool FilterEnabled
+        {
+            get => _filterEnabled;
+            set => _filterEnabled = value;
+        }
+        [XmlElement("FilterEnabled")]
+        public string FilterEnabledString
+        {
+            get => _filterEnabled.ToString();
+            set => _filterEnabled = XmlDataUtilities.StrToBool(value);
+        }
+
+        private double _filterAlpha = 0.5;
+        [XmlElement("FilterAlpha")]
+        public double FilterAlpha
+        {
+            get => _filterAlpha;
+            set => _filterAlpha = Math.Clamp(value, 0.001, 1.0);
+        }
+
+        private bool _jitterEnabled;
+        [XmlIgnore]
+        public bool JitterEnabled
+        {
+            get => _jitterEnabled;
+            set => _jitterEnabled = value;
+        }
+        [XmlElement("JitterEnabled")]
+        public string JitterEnabledString
+        {
+            get => _jitterEnabled.ToString();
+            set => _jitterEnabled = XmlDataUtilities.StrToBool(value);
+        }
+
+        private double _jitterRadius = 0.01;
+        [XmlElement("JitterRadius")]
+        public double JitterRadius
+        {
+            get => _jitterRadius;
+            set => _jitterRadius = Math.Clamp(value, 0.0, 1.0);
+        }
+
+        private double _jitterFrequency = 20.0;
+        [XmlElement("JitterFrequency")]
+        public double JitterFrequency
+        {
+            get => _jitterFrequency;
+            set => _jitterFrequency = Math.Clamp(value, 0.0, 1000.0);
+        }
+
+        private double _jitterThreshold = 1.0;
+        [XmlElement("JitterThreshold")]
+        public double JitterThreshold
+        {
+            get => _jitterThreshold;
+            set => _jitterThreshold = Math.Clamp(value, 0.0, 1.0);
+        }
+    }
+
+    public class SpecialAimRecoilGroup
+    {
+        private bool _enabled;
+        [XmlIgnore]
+        public bool Enabled
+        {
+            get => _enabled;
+            set => _enabled = value;
+        }
+        [XmlElement("Enabled")]
+        public string EnabledString
+        {
+            get => _enabled.ToString();
+            set => _enabled = XmlDataUtilities.StrToBool(value);
+        }
+
+        private double _compensationX;
+        [XmlElement("CompensationX")]
+        public double CompensationX
+        {
+            get => _compensationX;
+            set => _compensationX = Math.Clamp(value, -1.0, 1.0);
+        }
+
+        private double _compensationY;
+        [XmlElement("CompensationY")]
+        public double CompensationY
+        {
+            get => _compensationY;
+            set => _compensationY = Math.Clamp(value, -1.0, 1.0);
+        }
+
+        private double _pullStrength = 1.0;
+        [XmlElement("PullStrength")]
+        public double PullStrength
+        {
+            get => _pullStrength;
+            set => _pullStrength = Math.Clamp(value, 0.0, 1.0);
+        }
+
+        private double _pullRate = 2.0;
+        [XmlElement("PullRate")]
+        public double PullRate
+        {
+            get => _pullRate;
+            set => _pullRate = Math.Clamp(value, 0.0, 100.0);
+        }
+
+        private double _triggerThreshold = 0.3;
+        [XmlElement("TriggerThreshold")]
+        public double TriggerThreshold
+        {
+            get => _triggerThreshold;
+            set => _triggerThreshold = Math.Clamp(value, 0.0, 1.0);
+        }
+
+        private int _triggerSource = 1;
+        [XmlElement("TriggerSource")]
+        public int TriggerSource
+        {
+            get => _triggerSource;
+            set => _triggerSource = Math.Clamp(value, 0, 2);
         }
     }
 

@@ -1098,6 +1098,105 @@ namespace DS4Windows
             return (value < min) ? min : (value > max) ? max : value;
         }
 
+        // "Special Aim / Assist" per-slot runtime state. Static arrays indexed by
+        // device, same pattern as deltaAccelProcessors; On_Report is serialized per slot.
+        private static readonly DS4Windows.StickProcessing.StickProcessingSettings[] saLSSettings =
+            new DS4Windows.StickProcessing.StickProcessingSettings[Global.MAX_DS4_CONTROLLER_COUNT];
+        private static readonly DS4Windows.StickProcessing.StickProcessingSettings[] saRSSettings =
+            new DS4Windows.StickProcessing.StickProcessingSettings[Global.MAX_DS4_CONTROLLER_COUNT];
+        private static readonly DS4Windows.StickProcessing.StickProcessingState[] saLSState =
+            new DS4Windows.StickProcessing.StickProcessingState[Global.MAX_DS4_CONTROLLER_COUNT];
+        private static readonly DS4Windows.StickProcessing.StickProcessingState[] saRSState =
+            new DS4Windows.StickProcessing.StickProcessingState[Global.MAX_DS4_CONTROLLER_COUNT];
+
+        /// <summary>
+        /// Applies the profile's "Special Aim / Assist" stick pipeline
+        /// (radial deadzone, response curve, RC filter, rotational jitter,
+        /// recoil compensation) to the raw stick bytes before the regular
+        /// DS4Windows curve/deadzone handling runs.
+        /// </summary>
+        private static void ApplySpecialAim(int device, DS4State cState)
+        {
+            SpecialAimSettings sa = Global.getSpecialAimSettings(device);
+            if (sa == null || !sa.enabled)
+            {
+                return;
+            }
+
+            double dt = cState.elapsedTime;
+            if (dt <= 0.0 || dt > 0.5)
+            {
+                dt = 0.001; // guard against bogus deltas on the first report
+            }
+
+            DS4Windows.StickProcessing.StickProcessingSettings ls = saLSSettings[device];
+            if (ls == null) { ls = saLSSettings[device] = new DS4Windows.StickProcessing.StickProcessingSettings(); }
+            CopyStickSettings(sa.leftStick, ls);
+            DS4Windows.StickProcessing.StickProcessingState lsState = saLSState[device];
+            if (lsState == null) { lsState = saLSState[device] = new DS4Windows.StickProcessing.StickProcessingState(); }
+
+            double lx = DS4Windows.StickProcessing.StickProcessingPipeline.NormalizeAxis(cState.LX);
+            double ly = DS4Windows.StickProcessing.StickProcessingPipeline.NormalizeAxis(cState.LY);
+            DS4Windows.StickProcessing.StickProcessingPipeline.Process(ref lx, ref ly, ls, lsState, dt, 0.0);
+            cState.LX = DS4Windows.StickProcessing.StickProcessingPipeline.DenormalizeAxis(lx);
+            cState.LY = DS4Windows.StickProcessing.StickProcessingPipeline.DenormalizeAxis(ly);
+
+            DS4Windows.StickProcessing.StickProcessingSettings rs = saRSSettings[device];
+            if (rs == null) { rs = saRSSettings[device] = new DS4Windows.StickProcessing.StickProcessingSettings(); }
+            CopyStickSettings(sa.rightStick, rs);
+            rs.Recoil.Enabled = sa.recoil.enabled;
+            rs.Recoil.CompensationX = sa.recoil.compensationX;
+            rs.Recoil.CompensationY = sa.recoil.compensationY;
+            rs.Recoil.PullStrength = sa.recoil.pullStrength;
+            rs.Recoil.PullRate = sa.recoil.pullRate;
+            rs.Recoil.TriggerThreshold = sa.recoil.triggerThreshold;
+            rs.Recoil.Trigger = (DS4Windows.StickProcessing.TriggerSource)sa.recoil.triggerSource;
+
+            double triggerValue = sa.recoil.triggerSource switch
+            {
+                0 => cState.L2 / 255.0,
+                2 => Math.Max(cState.L2, cState.R2) / 255.0,
+                _ => cState.R2 / 255.0,
+            };
+
+            DS4Windows.StickProcessing.StickProcessingState rsState = saRSState[device];
+            if (rsState == null) { rsState = saRSState[device] = new DS4Windows.StickProcessing.StickProcessingState(); }
+
+            double rx = DS4Windows.StickProcessing.StickProcessingPipeline.NormalizeAxis(cState.RX);
+            double ry = DS4Windows.StickProcessing.StickProcessingPipeline.NormalizeAxis(cState.RY);
+            DS4Windows.StickProcessing.StickProcessingPipeline.Process(ref rx, ref ry, rs, rsState, dt, triggerValue);
+            cState.RX = DS4Windows.StickProcessing.StickProcessingPipeline.DenormalizeAxis(rx);
+            cState.RY = DS4Windows.StickProcessing.StickProcessingPipeline.DenormalizeAxis(ry);
+        }
+
+        private static void CopyStickSettings(SpecialAimStickSettings s, DS4Windows.StickProcessing.StickProcessingSettings e)
+        {
+            e.Enabled = s.enabled;
+
+            e.Deadzone.Enabled = s.deadzoneInner > 0.0 || s.deadzoneOuter > 0.0;
+            e.Deadzone.InnerRadius = s.deadzoneInner;
+            e.Deadzone.OuterRadius = s.deadzoneOuter;
+
+            e.Curve.Enabled = s.curveEnabled;
+            e.Curve.CurveType = (DS4Windows.StickProcessing.ResponseCurveType)s.curveType;
+            e.Curve.PowerExponent = s.curvePower;
+            e.Curve.BezierP1X = s.curveP1X;
+            e.Curve.BezierP1Y = s.curveP1Y;
+            e.Curve.BezierP2X = s.curveP2X;
+            e.Curve.BezierP2Y = s.curveP2Y;
+
+            e.Filter.Enabled = s.filterEnabled;
+            e.Filter.Alpha = s.filterAlpha;
+
+            e.Jitter.Enabled = s.jitterEnabled;
+            e.Jitter.Radius = s.jitterRadius;
+            e.Jitter.FrequencyHz = s.jitterFrequency;
+            e.Jitter.ActivationThreshold = s.jitterThreshold;
+
+            // Recoil is configured once and only forwarded through the right stick
+            e.Recoil.Enabled = false;
+        }
+
         public static DS4State SetCurveAndDeadzone(int device, DS4State cState, DS4State dState)
         {
             double rotation = /*tempDoubleArray[device] =*/  getLSRotation(device);
@@ -1133,6 +1232,8 @@ namespace DS4Windows
             {
                 CalcStickAxisFuzz(device, 1, rsMod.fuzz, cState.RX, cState.RY, out cState.RX, out cState.RY);
             }
+
+            ApplySpecialAim(device, cState);
 
             cState.CopyTo(dState);
             //DS4State dState = new DS4State(cState);

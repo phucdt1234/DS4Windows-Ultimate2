@@ -49,8 +49,8 @@ namespace DS4Windows
             Axial
         }
 
-        public const int DEFAULT_DEADZONE = 10;
-        public const int DEFAULT_ANTIDEADZONE = 20;
+        public const int DEFAULT_DEADZONE = 0;
+        public const int DEFAULT_ANTIDEADZONE = 0;
         public const int DEFAULT_MAXZONE = 100;
         public const double DEFAULT_MAXOUTPUT = 100.0;
         public const bool DEFAULT_MAXOUTPUT_FORCE = false;

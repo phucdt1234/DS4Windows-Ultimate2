@@ -29,6 +29,7 @@ using System.Windows.Media.Imaging;
 using Microsoft.Win32;
 using DS4Windows;
 using DS4Windows.StickModifiers;
+using DS4WinWPF.DS4Control;
 using DS4WinWPF.DS4Forms.ViewModels.Util;
 using DS4Windows.InputDevices;
 
@@ -3721,6 +3722,102 @@ namespace DS4WinWPF.DS4Forms.ViewModels
             gyroMouseSmoothMethodIndex = FindGyroMouseSmoothMethodIndex();
             gyroMouseStickSmoothMethodIndex = FindGyroMouseStickSmoothMethodIndex();
         }
+
+        #region Special Aim / Assist
+
+        public bool SpecialAimEnabled
+        {
+            get => Global.getSpecialAimSettings(device).enabled;
+            set => Global.getSpecialAimSettings(device).enabled = value;
+        }
+
+
+        private SpecialAimStickSettings LS => Global.getSpecialAimSettings(device).leftStick;
+        private SpecialAimStickSettings RS => Global.getSpecialAimSettings(device).rightStick;
+        private SpecialAimRecoilSettings Recoil => Global.getSpecialAimSettings(device).recoil;
+
+        public bool LSSpecialAimEnabled { get => LS.enabled; set => LS.enabled = value; }
+        public bool RSSpecialAimEnabled { get => RS.enabled; set => RS.enabled = value; }
+
+        public double LSDeadzoneInner { get => LS.deadzoneInner; set => LS.deadzoneInner = Math.Clamp(value, 0.0, 1.0); }
+        public double LSDeadzoneOuter { get => LS.deadzoneOuter; set => LS.deadzoneOuter = Math.Clamp(value, 0.0, 1.0); }
+        public double RSDeadzoneInner { get => RS.deadzoneInner; set => RS.deadzoneInner = Math.Clamp(value, 0.0, 1.0); }
+        public double RSDeadzoneOuter { get => RS.deadzoneOuter; set => RS.deadzoneOuter = Math.Clamp(value, 0.0, 1.0); }
+
+        public bool LSCurveEnabled { get => LS.curveEnabled; set => LS.curveEnabled = value; }
+        public bool RSCurveEnabled { get => RS.curveEnabled; set => RS.curveEnabled = value; }
+
+        public int LSCurveTypeIndex
+        {
+            get => LS.curveType;
+            set
+            {
+                if (LS.curveType == value) return;
+                LS.curveType = value;
+                LSCurveTypeIndexChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler LSCurveTypeIndexChanged;
+
+        public int RSCurveTypeIndex
+        {
+            get => RS.curveType;
+            set
+            {
+                if (RS.curveType == value) return;
+                RS.curveType = value;
+                RSCurveTypeIndexChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler RSCurveTypeIndexChanged;
+
+        public double LSCurvePower { get => LS.curvePower; set => LS.curvePower = Math.Clamp(value, 0.1, 10.0); }
+        public double RSCurvePower { get => RS.curvePower; set => RS.curvePower = Math.Clamp(value, 0.1, 10.0); }
+
+        public double LSCurveP1X { get => LS.curveP1X; set => LS.curveP1X = Math.Clamp(value, 0.0, 1.0); }
+        public double LSCurveP1Y { get => LS.curveP1Y; set => LS.curveP1Y = Math.Clamp(value, 0.0, 1.0); }
+        public double LSCurveP2X { get => LS.curveP2X; set => LS.curveP2X = Math.Clamp(value, 0.0, 1.0); }
+        public double LSCurveP2Y { get => LS.curveP2Y; set => LS.curveP2Y = Math.Clamp(value, 0.0, 1.0); }
+        public double RSCurveP1X { get => RS.curveP1X; set => RS.curveP1X = Math.Clamp(value, 0.0, 1.0); }
+        public double RSCurveP1Y { get => RS.curveP1Y; set => RS.curveP1Y = Math.Clamp(value, 0.0, 1.0); }
+        public double RSCurveP2X { get => RS.curveP2X; set => RS.curveP2X = Math.Clamp(value, 0.0, 1.0); }
+        public double RSCurveP2Y { get => RS.curveP2Y; set => RS.curveP2Y = Math.Clamp(value, 0.0, 1.0); }
+
+        public bool LSFilterEnabled { get => LS.filterEnabled; set => LS.filterEnabled = value; }
+        public bool RSFilterEnabled { get => RS.filterEnabled; set => RS.filterEnabled = value; }
+        public double LSFilterAlpha { get => LS.filterAlpha; set => LS.filterAlpha = Math.Clamp(value, 0.001, 1.0); }
+        public double RSFilterAlpha { get => RS.filterAlpha; set => RS.filterAlpha = Math.Clamp(value, 0.001, 1.0); }
+
+        public bool LSJitterEnabled { get => LS.jitterEnabled; set => LS.jitterEnabled = value; }
+        public bool RSJitterEnabled { get => RS.jitterEnabled; set => RS.jitterEnabled = value; }
+        public double LSJitterRadius { get => LS.jitterRadius; set => LS.jitterRadius = Math.Clamp(value, 0.0, 1.0); }
+        public double RSJitterRadius { get => RS.jitterRadius; set => RS.jitterRadius = Math.Clamp(value, 0.0, 1.0); }
+        public double LSJitterFrequency { get => LS.jitterFrequency; set => LS.jitterFrequency = Math.Clamp(value, 0.0, 1000.0); }
+        public double RSJitterFrequency { get => RS.jitterFrequency; set => RS.jitterFrequency = Math.Clamp(value, 0.0, 1000.0); }
+        public double LSJitterThreshold { get => LS.jitterThreshold; set => LS.jitterThreshold = Math.Clamp(value, 0.0, 1.0); }
+        public double RSJitterThreshold { get => RS.jitterThreshold; set => RS.jitterThreshold = Math.Clamp(value, 0.0, 1.0); }
+
+        public bool RecoilEnabled { get => Recoil.enabled; set => Recoil.enabled = value; }
+        public double RecoilCompensationX { get => Recoil.compensationX; set => Recoil.compensationX = Math.Clamp(value, -1.0, 1.0); }
+        public double RecoilCompensationY { get => Recoil.compensationY; set => Recoil.compensationY = Math.Clamp(value, -1.0, 1.0); }
+        public double RecoilPullStrength { get => Recoil.pullStrength; set => Recoil.pullStrength = Math.Clamp(value, 0.0, 1.0); }
+        public double RecoilPullRate { get => Recoil.pullRate; set => Recoil.pullRate = Math.Clamp(value, 0.0, 100.0); }
+        public double RecoilTriggerThreshold { get => Recoil.triggerThreshold; set => Recoil.triggerThreshold = Math.Clamp(value, 0.0, 1.0); }
+
+        public int RecoilTriggerSourceIndex
+        {
+            get => Recoil.triggerSource;
+            set
+            {
+                if (Recoil.triggerSource == value) return;
+                Recoil.triggerSource = value;
+                RecoilTriggerSourceIndexChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler RecoilTriggerSourceIndexChanged;
+
+        #endregion
+
     }
 
     public class PresetMenuHelper
@@ -4189,6 +4286,7 @@ namespace DS4WinWPF.DS4Forms.ViewModels
 
             return inputControls;
         }
+
     }
 
     public class TriggerModeChoice

@@ -592,6 +592,9 @@ namespace DS4Windows
                 case InputDevices.InputDeviceType.DS3:
                     result = deviceOptions.DS3DeviceOpts.Enabled;
                     break;
+                case InputDevices.InputDeviceType.EightBitDoDInput:
+                    result = deviceOptions.EightBitDoDInputOpts.Enabled;
+                    break;
                 default:
                     break;
             }
@@ -801,6 +804,12 @@ namespace DS4Windows
                     break;
                 case InputDevices.InputDeviceType.SwitchPro:
                     result.AddRange(new DS4Controls[] { DS4Controls.Capture });
+                    break;
+                case InputDevices.InputDeviceType.EightBitDoDInput:
+                    // PL/PR back paddles and L4/R4 extra shoulder buttons as
+                    // mappable extras. Keeps from checking non-existent buttons
+                    // on other device types.
+                    result.AddRange(new DS4Controls[] { DS4Controls.BLP, DS4Controls.BRP, DS4Controls.SideL, DS4Controls.SideR });
                     break;
                 default:
                     break;
@@ -1583,7 +1592,11 @@ namespace DS4Windows
                 LogDebug($"Using output KB+M handler: {Global.outputKBMHandler.GetFullDisplayName()}");
                 LogDebug($"Connection to ViGEmBus {Global.vigembusVersion} established");
 
-                DS4Devices.isExclusiveMode = getUseExclusiveMode(); //Re-enable Exclusive Mode
+                // When HidHide is installed, hiding is handled through the device
+                // blacklist (ApplyHidHideHiding) and exclusive opens are skipped:
+                // the exclusive fallback path needs elevated device re-enables
+                // (UAC prompt) and can hang the service restart.
+                DS4Devices.isExclusiveMode = getUseExclusiveMode() && !Global.hidHideInstalled; //Re-enable Exclusive Mode
 
                 UpdateHidHiddenAttributes();
 
@@ -2145,7 +2158,86 @@ namespace DS4Windows
                 PrepareDevUDPMotion(device, tempIdx);
             }
 
+            ApplyHidHideHiding(device);
+
             device.StartUpdate();
+        }
+
+        private readonly List<string> hidHideManagedInstances = new List<string>();
+
+        /// <summary>
+        /// Adds or removes a connected controller's device instance in the
+        /// HidHide blacklist so gamepad testers and other apps cannot read the
+        /// physical pad while the "Hide DS4 Controller" option is enabled.
+        /// DS4Windows itself keeps access through its HidHide whitelist entry
+        /// (registered in CheckHidHidePresence).
+        /// </summary>
+        private void ApplyHidHideHiding(DS4Device device)
+        {
+            if (!Global.hidHideInstalled)
+            {
+                return;
+            }
+
+            bool wantHide = Global.getUseExclusiveMode();
+            try
+            {
+                using (HidHideAPIDevice hidHideDevice = new HidHideAPIDevice())
+                {
+                    if (!hidHideDevice.IsOpen())
+                    {
+                        return;
+                    }
+
+                    string instanceId = Global.GetInstanceIdFromDevicePath(device.HidDevice.DevicePath);
+                    if (string.IsNullOrEmpty(instanceId))
+                    {
+                        return;
+                    }
+
+                    string key = instanceId.ToUpperInvariant();
+
+                    List<string> blacklist = hidHideDevice.GetBlacklist();
+                    if (blacklist == null)
+                    {
+                        return;
+                    }
+
+                    List<string> merged = blacklist.Where(x => !string.IsNullOrWhiteSpace(x))
+                        .Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+
+                    bool changed;
+                    if (wantHide)
+                    {
+                        changed = !merged.Contains(key, StringComparer.OrdinalIgnoreCase);
+                        if (changed)
+                        {
+                            merged.Add(key);
+                        }
+
+                        if (!hidHideManagedInstances.Contains(key))
+                        {
+                            hidHideManagedInstances.Add(key);
+                        }
+                    }
+                    else
+                    {
+                        changed = merged.RemoveAll(x => x.Equals(key, StringComparison.OrdinalIgnoreCase)) > 0
+                            || hidHideManagedInstances.RemoveAll(x => x.Equals(key, StringComparison.OrdinalIgnoreCase)) > 0;
+                    }
+
+                    if (changed)
+                    {
+                        hidHideDevice.SetBlacklist(merged);
+                        UpdateHidHideAttributes();
+                        AppLogger.LogToGui($"HidHide: {(wantHide ? "hiding" : "unhiding")} device instance ({instanceId})", false);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLogger.LogToGui($"HidHide: failed to update blacklist. {ex.Message}", true);
+            }
         }
 
         private void BeginPrepareConnectedInputController(DS4Device device, bool showlog = false)

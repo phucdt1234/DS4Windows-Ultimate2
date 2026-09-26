@@ -47,6 +47,9 @@ namespace DS4Windows
         private DS3DeviceOptions dS3DeviceOpts = new DS3DeviceOptions();
         public DS3DeviceOptions DS3DeviceOpts { get => dS3DeviceOpts; }
 
+        private EightBitDoDInputDeviceOptions eightBitDoDInputOpts = new EightBitDoDInputDeviceOptions();
+        public EightBitDoDInputDeviceOptions EightBitDoDInputOpts { get => eightBitDoDInputOpts; }
+
         private bool verboseLogMessages;
         public bool VerboseLogMessages { get => verboseLogMessages; set => verboseLogMessages = value; }
 
@@ -97,6 +100,23 @@ namespace DS4Windows
     public class DS3DeviceOptions
     {
         public const bool DEFAULT_ENABLE = false;
+        private bool enabled = DEFAULT_ENABLE;
+        public bool Enabled
+        {
+            get => enabled;
+            set
+            {
+                if (enabled == value) return;
+                enabled = value;
+                EnabledChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler EnabledChanged;
+    }
+
+    public class EightBitDoDInputDeviceOptions
+    {
+        public const bool DEFAULT_ENABLE = true;
         private bool enabled = DEFAULT_ENABLE;
         public bool Enabled
         {

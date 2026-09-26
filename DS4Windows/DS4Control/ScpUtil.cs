@@ -19,6 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 using DS4Windows.DS4Control;
 using DS4Windows.InputDevices;
 using DS4Windows.StickModifiers;
+using DS4WinWPF.DS4Control;
 using DS4WinWPF.DS4Control.DTOXml;
 using DS4WinWPF.DS4Forms.ViewModels;
 using Sensorit.Base;
@@ -2545,6 +2546,13 @@ namespace DS4Windows
         public static StickOutputSetting[] LSOutputSettings => m_Config.lsOutputSettings;
         public static StickOutputSetting[] RSOutputSettings => m_Config.rsOutputSettings;
 
+        public static SpecialAimSettings[] SpecialAimSettings => m_Config.specialAimSettings;
+
+        public static SpecialAimSettings getSpecialAimSettings(int index)
+        {
+            return m_Config.specialAimSettings[index];
+        }
+
         public static TriggerOutputSettings[] L2OutputSettings => m_Config.l2OutputSettings;
         public static TriggerOutputSettings[] R2OutputSettings => m_Config.r2OutputSettings;
 
@@ -3608,6 +3616,13 @@ namespace DS4Windows
             new StickOutputSetting(), new StickOutputSetting(), new StickOutputSetting(),
             new StickOutputSetting(), new StickOutputSetting(), new StickOutputSetting(),
             new StickOutputSetting(), new StickOutputSetting(), new StickOutputSetting(),
+        };
+
+        public SpecialAimSettings[] specialAimSettings = new SpecialAimSettings[Global.TEST_PROFILE_ITEM_COUNT]
+        {
+            new SpecialAimSettings(), new SpecialAimSettings(), new SpecialAimSettings(),
+            new SpecialAimSettings(), new SpecialAimSettings(), new SpecialAimSettings(),
+            new SpecialAimSettings(), new SpecialAimSettings(), new SpecialAimSettings(),
         };
 
         public TriggerOutputSettings[] l2OutputSettings = new TriggerOutputSettings[Global.TEST_PROFILE_ITEM_COUNT]
@@ -8150,6 +8165,20 @@ namespace DS4Windows
                             catch { }
                         }
 
+                        XmlNode xmlEightBitDoDInputSupport = xmlDeviceOptions.SelectSingleNode("EightBitDoDInputSupportSettings");
+                        if (xmlEightBitDoDInputSupport != null)
+                        {
+                            try
+                            {
+                                XmlNode item = xmlEightBitDoDInputSupport.SelectSingleNode("Enabled");
+                                if (bool.TryParse(item?.InnerText ?? "", out bool temp))
+                                {
+                                    deviceOptions.EightBitDoDInputOpts.Enabled = temp;
+                                }
+                            }
+                            catch { }
+                        }
+
                         XmlNode xmlJoyConSupport = xmlDeviceOptions.SelectSingleNode("JoyConSupportSettings");
                         if (xmlJoyConSupport != null)
                         {
@@ -8391,6 +8420,13 @@ namespace DS4Windows
             xmlSwitchProSupport.AppendChild(xmlSwitchProEnabled);
 
             xmlDeviceOptions.AppendChild(xmlSwitchProSupport);
+
+            XmlElement xmlEightBitDoDInputSupport = m_Xdoc.CreateElement("EightBitDoDInputSupportSettings", null);
+            XmlElement xmlEightBitDoDInputEnabled = m_Xdoc.CreateElement("Enabled", null);
+            xmlEightBitDoDInputEnabled.InnerText = deviceOptions.EightBitDoDInputOpts.Enabled.ToString();
+            xmlEightBitDoDInputSupport.AppendChild(xmlEightBitDoDInputEnabled);
+
+            xmlDeviceOptions.AppendChild(xmlEightBitDoDInputSupport);
 
             XmlElement xmlJoyConSupport = m_Xdoc.CreateElement("JoyConSupportSettings", null);
             XmlElement xmlJoyconEnabled = m_Xdoc.CreateElement("Enabled", null);
@@ -9565,6 +9601,8 @@ namespace DS4Windows
             lsModInfo[device].maxZone = rsModInfo[device].maxZone = StickDeadZoneInfo.DEFAULT_MAXZONE;
             lsModInfo[device].maxOutput = rsModInfo[device].maxOutput = StickDeadZoneInfo.DEFAULT_MAXOUTPUT;
             lsModInfo[device].fuzz = rsModInfo[device].fuzz = StickDeadZoneInfo.DEFAULT_FUZZ;
+
+            specialAimSettings[device].Reset();
 
             //l2ModInfo[device].deadZone = r2ModInfo[device].deadZone = 0;
             //l2ModInfo[device].antiDeadZone = r2ModInfo[device].antiDeadZone = 0;

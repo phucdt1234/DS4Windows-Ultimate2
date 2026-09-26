@@ -323,9 +323,13 @@ namespace DS4WinWPF.DS4Forms
                 DS4State tmpinterState = Program.rootHub.getDS4StateTemp(deviceNum);
                 long cntCalibrating = ds.SixAxis.CntCalibrating;
 
-                // Wait for controller to be in a wait period
-                ds.ReadWaitEv.Wait();
-                ds.ReadWaitEv.Reset();
+                // Wait for controller to be in a wait period. Bound the wait:
+                // a device whose input loop is not signaling (disconnected,
+                // exotic read loop) must not freeze this reading screen.
+                if (ds.ReadWaitEv.Wait(TimeSpan.FromMilliseconds(100)))
+                {
+                    ds.ReadWaitEv.Reset();
+                }
 
                 // Make copy of current state values for UI thread
                 tmpbaseState.CopyTo(baseState);

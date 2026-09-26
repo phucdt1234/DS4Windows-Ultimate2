@@ -2038,6 +2038,255 @@
                 </ScrollViewer>
             </TabItem>
 
+            <TabItem Header="Special Aim / Assist">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <GroupBox Header="Enable" MinHeight="50" Margin="4,4,4,0" Padding="0,4,0,4">
+                            <StackPanel Orientation="Vertical">
+                                <DockPanel LastChildFill="False">
+                                    <Label Content="Processing pipeline (deadzone, curve, filter, jitter, recoil)" DockPanel.Dock="Left" />
+                                    <CheckBox IsChecked="{Binding SpecialAimEnabled}" Margin="{StaticResource spaceMargin}" DockPanel.Dock="Right" />
+                                </DockPanel>
+                            </StackPanel>
+                        </GroupBox>
+
+                        <GroupBox Header="Left Stick" MinHeight="50" Margin="4,4,4,0" Padding="0,4,0,4">
+                            <StackPanel Orientation="Vertical">
+                                <DockPanel LastChildFill="False">
+                                    <Label Content="Enabled" ContentStringFormat="{}{0}:" DockPanel.Dock="Left" />
+                                    <CheckBox IsChecked="{Binding LSSpecialAimEnabled}" Margin="{StaticResource spaceMargin}" DockPanel.Dock="Right" />
+                                </DockPanel>
+
+                                <Expander IsExpanded="{Binding LSSpecialAimEnabled,Mode=OneTime}" Header="Settings">
+                                    <Grid IsEnabled="{Binding LSSpecialAimEnabled}">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition />
+                                            <RowDefinition />
+                                            <RowDefinition />
+                                            <RowDefinition />
+                                            <RowDefinition />
+                                            <RowDefinition />
+                                            <RowDefinition />
+                                            <RowDefinition />
+                                        </Grid.RowDefinitions>
+
+                                        <Label Content="Radial deadzone inner" ContentStringFormat="{}{0}:" Grid.Row="0" Grid.Column="0" />
+                                        <xctk:DoubleUpDown d:IsHidden="True" FormatString="F3" Value="{Binding LSDeadzoneInner}"
+                                            MinWidth="100" Minimum="0.0" Maximum="1.0" Increment="0.01"
+                                            Margin="{StaticResource spaceMargin}" Grid.Row="0" Grid.Column="1" />
+
+                                        <Label Content="Radial deadzone outer" ContentStringFormat="{}{0}:" Grid.Row="1" Grid.Column="0" />
+                                        <xctk:DoubleUpDown d:IsHidden="True" FormatString="F3" Value="{Binding LSDeadzoneOuter}"
+                                            MinWidth="100" Minimum="0.0" Maximum="1.0" Increment="0.01"
+                                            Margin="{StaticResource spaceMargin}" Grid.Row="1" Grid.Column="1" />
+
+                                        <Label Content="Response curve" ContentStringFormat="{}{0}:" Grid.Row="2" Grid.Column="0" />
+                                        <StackPanel Orientation="Horizontal" Grid.Row="2" Grid.Column="1">
+                                            <CheckBox IsChecked="{Binding LSCurveEnabled}" VerticalAlignment="Center" Margin="{StaticResource spaceMargin}" />
+                                            <ComboBox SelectedIndex="{Binding LSCurveTypeIndex}" MinWidth="100" Margin="{StaticResource spaceMargin}">
+                                                <ComboBoxItem Content="Linear" />
+                                                <ComboBoxItem Content="Power" />
+                                                <ComboBoxItem Content="Bezier" />
+                                                <ComboBoxItem Content="S-Curve" />
+                                            </ComboBox>
+                                        </StackPanel>
+
+                                        <Label Content="Power exponent (y = x^n)" ContentStringFormat="{}{0}:" Grid.Row="3" Grid.Column="0" />
+                                        <xctk:DoubleUpDown d:IsHidden="True" FormatString="F2" Value="{Binding LSCurvePower}"
+                                            MinWidth="100" Minimum="0.1" Maximum="10.0" Increment="0.1"
+                                            Margin="{StaticResource spaceMargin}" Grid.Row="3" Grid.Column="1" />
+
+                                        <Label Content="Bezier P1 (x, y)" ContentStringFormat="{}{0}:" Grid.Row="4" Grid.Column="0" />
+                                        <StackPanel Orientation="Horizontal" Grid.Row="4" Grid.Column="1">
+                                            <xctk:DoubleUpDown d:IsHidden="True" FormatString="F2" Value="{Binding LSCurveP1X}"
+                                                MinWidth="70" Minimum="0.0" Maximum="1.0" Increment="0.05" Margin="{StaticResource spaceMargin}" />
+                                            <xctk:DoubleUpDown d:IsHidden="True" FormatString="F2" Value="{Binding LSCurveP1Y}"
+                                                MinWidth="70" Minimum="0.0" Maximum="1.0" Increment="0.05" Margin="{StaticResource spaceMargin}" />
+                                        </StackPanel>
+
+                                        <Label Content="Bezier P2 (x, y)" ContentStringFormat="{}{0}:" Grid.Row="5" Grid.Column="0" />
+                                        <StackPanel Orientation="Horizontal" Grid.Row="5" Grid.Column="1">
+                                            <xctk:DoubleUpDown d:IsHidden="True" FormatString="F2" Value="{Binding LSCurveP2X}"
+                                                MinWidth="70" Minimum="0.0" Maximum="1.0" Increment="0.05" Margin="{StaticResource spaceMargin}" />
+                                            <xctk:DoubleUpDown d:IsHidden="True" FormatString="F2" Value="{Binding LSCurveP2Y}"
+                                                MinWidth="70" Minimum="0.0" Maximum="1.0" Increment="0.05" Margin="{StaticResource spaceMargin}" />
+                                        </StackPanel>
+
+                                        <Label Content="RC filter alpha" ContentStringFormat="{}{0}:" Grid.Row="6" Grid.Column="0" />
+                                        <StackPanel Orientation="Horizontal" Grid.Row="6" Grid.Column="1">
+                                            <CheckBox IsChecked="{Binding LSFilterEnabled}" VerticalAlignment="Center" Margin="{StaticResource spaceMargin}" />
+                                            <xctk:DoubleUpDown d:IsHidden="True" FormatString="F3" Value="{Binding LSFilterAlpha}"
+                                                MinWidth="100" Minimum="0.001" Maximum="1.0" Increment="0.05" Margin="{StaticResource spaceMargin}" />
+                                        </StackPanel>
+
+                                        <Label Content="Jitter radius / freq / threshold" ContentStringFormat="{}{0}:" Grid.Row="7" Grid.Column="0" />
+                                        <StackPanel Orientation="Horizontal" Grid.Row="7" Grid.Column="1">
+                                            <CheckBox IsChecked="{Binding LSJitterEnabled}" VerticalAlignment="Center" Margin="{StaticResource spaceMargin}" />
+                                            <xctk:DoubleUpDown d:IsHidden="True" FormatString="F3" Value="{Binding LSJitterRadius}"
+                                                MinWidth="70" Minimum="0.0" Maximum="1.0" Increment="0.005" Margin="{StaticResource spaceMargin}" />
+                                            <xctk:DoubleUpDown d:IsHidden="True" FormatString="F1" Value="{Binding LSJitterFrequency}"
+                                                MinWidth="70" Minimum="0.0" Maximum="1000.0" Increment="1.0" Margin="{StaticResource spaceMargin}" />
+                                            <xctk:DoubleUpDown d:IsHidden="True" FormatString="F3" Value="{Binding LSJitterThreshold}"
+                                                MinWidth="70" Minimum="0.0" Maximum="1.0" Increment="0.01" Margin="{StaticResource spaceMargin}" />
+                                        </StackPanel>
+                                    </Grid>
+                                </Expander>
+                            </StackPanel>
+                        </GroupBox>
+
+                        <GroupBox Header="Right Stick" MinHeight="50" Margin="4,4,4,0" Padding="0,4,0,4">
+                            <StackPanel Orientation="Vertical">
+                                <DockPanel LastChildFill="False">
+                                    <Label Content="Enabled" ContentStringFormat="{}{0}:" DockPanel.Dock="Left" />
+                                    <CheckBox IsChecked="{Binding RSSpecialAimEnabled}" Margin="{StaticResource spaceMargin}" DockPanel.Dock="Right" />
+                                </DockPanel>
+
+                                <Expander IsExpanded="{Binding RSSpecialAimEnabled,Mode=OneTime}" Header="Settings">
+                                    <Grid IsEnabled="{Binding RSSpecialAimEnabled}">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition />
+                                            <RowDefinition />
+                                            <RowDefinition />
+                                            <RowDefinition />
+                                            <RowDefinition />
+                                            <RowDefinition />
+                                            <RowDefinition />
+                                            <RowDefinition />
+                                        </Grid.RowDefinitions>
+
+                                        <Label Content="Radial deadzone inner" ContentStringFormat="{}{0}:" Grid.Row="0" Grid.Column="0" />
+                                        <xctk:DoubleUpDown d:IsHidden="True" FormatString="F3" Value="{Binding RSDeadzoneInner}"
+                                            MinWidth="100" Minimum="0.0" Maximum="1.0" Increment="0.01"
+                                            Margin="{StaticResource spaceMargin}" Grid.Row="0" Grid.Column="1" />
+
+                                        <Label Content="Radial deadzone outer" ContentStringFormat="{}{0}:" Grid.Row="1" Grid.Column="0" />
+                                        <xctk:DoubleUpDown d:IsHidden="True" FormatString="F3" Value="{Binding RSDeadzoneOuter}"
+                                            MinWidth="100" Minimum="0.0" Maximum="1.0" Increment="0.01"
+                                            Margin="{StaticResource spaceMargin}" Grid.Row="1" Grid.Column="1" />
+
+                                        <Label Content="Response curve" ContentStringFormat="{}{0}:" Grid.Row="2" Grid.Column="0" />
+                                        <StackPanel Orientation="Horizontal" Grid.Row="2" Grid.Column="1">
+                                            <CheckBox IsChecked="{Binding RSCurveEnabled}" VerticalAlignment="Center" Margin="{StaticResource spaceMargin}" />
+                                            <ComboBox SelectedIndex="{Binding RSCurveTypeIndex}" MinWidth="100" Margin="{StaticResource spaceMargin}">
+                                                <ComboBoxItem Content="Linear" />
+                                                <ComboBoxItem Content="Power" />
+                                                <ComboBoxItem Content="Bezier" />
+                                                <ComboBoxItem Content="S-Curve" />
+                                            </ComboBox>
+                                        </StackPanel>
+
+                                        <Label Content="Power exponent (y = x^n)" ContentStringFormat="{}{0}:" Grid.Row="3" Grid.Column="0" />
+                                        <xctk:DoubleUpDown d:IsHidden="True" FormatString="F2" Value="{Binding RSCurvePower}"
+                                            MinWidth="100" Minimum="0.1" Maximum="10.0" Increment="0.1"
+                                            Margin="{StaticResource spaceMargin}" Grid.Row="3" Grid.Column="1" />
+
+                                        <Label Content="Bezier P1 (x, y)" ContentStringFormat="{}{0}:" Grid.Row="4" Grid.Column="0" />
+                                        <StackPanel Orientation="Horizontal" Grid.Row="4" Grid.Column="1">
+                                            <xctk:DoubleUpDown d:IsHidden="True" FormatString="F2" Value="{Binding RSCurveP1X}"
+                                                MinWidth="70" Minimum="0.0" Maximum="1.0" Increment="0.05" Margin="{StaticResource spaceMargin}" />
+                                            <xctk:DoubleUpDown d:IsHidden="True" FormatString="F2" Value="{Binding RSCurveP1Y}"
+                                                MinWidth="70" Minimum="0.0" Maximum="1.0" Increment="0.05" Margin="{StaticResource spaceMargin}" />
+                                        </StackPanel>
+
+                                        <Label Content="Bezier P2 (x, y)" ContentStringFormat="{}{0}:" Grid.Row="5" Grid.Column="0" />
+                                        <StackPanel Orientation="Horizontal" Grid.Row="5" Grid.Column="1">
+                                            <xctk:DoubleUpDown d:IsHidden="True" FormatString="F2" Value="{Binding RSCurveP2X}"
+                                                MinWidth="70" Minimum="0.0" Maximum="1.0" Increment="0.05" Margin="{StaticResource spaceMargin}" />
+                                            <xctk:DoubleUpDown d:IsHidden="True" FormatString="F2" Value="{Binding RSCurveP2Y}"
+                                                MinWidth="70" Minimum="0.0" Maximum="1.0" Increment="0.05" Margin="{StaticResource spaceMargin}" />
+                                        </StackPanel>
+
+                                        <Label Content="RC filter alpha" ContentStringFormat="{}{0}:" Grid.Row="6" Grid.Column="0" />
+                                        <StackPanel Orientation="Horizontal" Grid.Row="6" Grid.Column="1">
+                                            <CheckBox IsChecked="{Binding RSFilterEnabled}" VerticalAlignment="Center" Margin="{StaticResource spaceMargin}" />
+                                            <xctk:DoubleUpDown d:IsHidden="True" FormatString="F3" Value="{Binding RSFilterAlpha}"
+                                                MinWidth="100" Minimum="0.001" Maximum="1.0" Increment="0.05" Margin="{StaticResource spaceMargin}" />
+                                        </StackPanel>
+
+                                        <Label Content="Jitter radius / freq / threshold" ContentStringFormat="{}{0}:" Grid.Row="7" Grid.Column="0" />
+                                        <StackPanel Orientation="Horizontal" Grid.Row="7" Grid.Column="1">
+                                            <CheckBox IsChecked="{Binding RSJitterEnabled}" VerticalAlignment="Center" Margin="{StaticResource spaceMargin}" />
+                                            <xctk:DoubleUpDown d:IsHidden="True" FormatString="F3" Value="{Binding RSJitterRadius}"
+                                                MinWidth="70" Minimum="0.0" Maximum="1.0" Increment="0.005" Margin="{StaticResource spaceMargin}" />
+                                            <xctk:DoubleUpDown d:IsHidden="True" FormatString="F1" Value="{Binding RSJitterFrequency}"
+                                                MinWidth="70" Minimum="0.0" Maximum="1000.0" Increment="1.0" Margin="{StaticResource spaceMargin}" />
+                                            <xctk:DoubleUpDown d:IsHidden="True" FormatString="F3" Value="{Binding RSJitterThreshold}"
+                                                MinWidth="70" Minimum="0.0" Maximum="1.0" Increment="0.01" Margin="{StaticResource spaceMargin}" />
+                                        </StackPanel>
+                                    </Grid>
+                                </Expander>
+                            </StackPanel>
+                        </GroupBox>
+
+                        <GroupBox Header="Anti-Recoil (right stick)" MinHeight="50" Margin="4,4,4,20" Padding="0,4,0,4">
+                            <StackPanel Orientation="Vertical">
+                                <DockPanel LastChildFill="False">
+                                    <Label Content="Enabled" ContentStringFormat="{}{0}:" DockPanel.Dock="Left" />
+                                    <CheckBox IsChecked="{Binding RecoilEnabled}" Margin="{StaticResource spaceMargin}" DockPanel.Dock="Right" />
+                                </DockPanel>
+
+                                <Expander IsExpanded="{Binding RecoilEnabled,Mode=OneTime}" Header="Settings">
+                                    <Grid IsEnabled="{Binding RecoilEnabled}">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition />
+                                            <RowDefinition />
+                                            <RowDefinition />
+                                            <RowDefinition />
+                                            <RowDefinition />
+                                            <RowDefinition />
+                                        </Grid.RowDefinitions>
+
+                                        <Label Content="Horizontal compensation" ContentStringFormat="{}{0}:" Grid.Row="0" Grid.Column="0" />
+                                        <xctk:DoubleUpDown d:IsHidden="True" FormatString="F3" Value="{Binding RecoilCompensationX}"
+                                            MinWidth="100" Minimum="-1.0" Maximum="1.0" Increment="0.01"
+                                            Margin="{StaticResource spaceMargin}" Grid.Row="0" Grid.Column="1" />
+
+                                        <Label Content="Vertical compensation" ContentStringFormat="{}{0}:" Grid.Row="1" Grid.Column="0" />
+                                        <xctk:DoubleUpDown d:IsHidden="True" FormatString="F3" Value="{Binding RecoilCompensationY}"
+                                            MinWidth="100" Minimum="-1.0" Maximum="1.0" Increment="0.01"
+                                            Margin="{StaticResource spaceMargin}" Grid.Row="1" Grid.Column="1" />
+
+                                        <Label Content="Pull strength" ContentStringFormat="{}{0}:" Grid.Row="2" Grid.Column="0" />
+                                        <xctk:DoubleUpDown d:IsHidden="True" FormatString="F2" Value="{Binding RecoilPullStrength}"
+                                            MinWidth="100" Minimum="0.0" Maximum="1.0" Increment="0.05"
+                                            Margin="{StaticResource spaceMargin}" Grid.Row="2" Grid.Column="1" />
+
+                                        <Label Content="Pull rate (units/s)" ContentStringFormat="{}{0}:" Grid.Row="3" Grid.Column="0" />
+                                        <xctk:DoubleUpDown d:IsHidden="True" FormatString="F2" Value="{Binding RecoilPullRate}"
+                                            MinWidth="100" Minimum="0.0" Maximum="100.0" Increment="0.5"
+                                            Margin="{StaticResource spaceMargin}" Grid.Row="3" Grid.Column="1" />
+
+                                        <Label Content="Trigger activation point" ContentStringFormat="{}{0}:" Grid.Row="4" Grid.Column="0" />
+                                        <xctk:DoubleUpDown d:IsHidden="True" FormatString="F2" Value="{Binding RecoilTriggerThreshold}"
+                                            MinWidth="100" Minimum="0.0" Maximum="1.0" Increment="0.05"
+                                            Margin="{StaticResource spaceMargin}" Grid.Row="4" Grid.Column="1" />
+
+                                        <Label Content="Trigger source" ContentStringFormat="{}{0}:" Grid.Row="5" Grid.Column="0" />
+                                        <ComboBox SelectedIndex="{Binding RecoilTriggerSourceIndex}" MinWidth="120" Margin="{StaticResource spaceMargin}" Grid.Row="5" Grid.Column="1">
+                                            <ComboBoxItem Content="L2" />
+                                            <ComboBoxItem Content="R2" />
+                                            <ComboBoxItem Content="Any" />
+                                        </ComboBox>
+                                    </Grid>
+                                </Expander>
+                            </StackPanel>
+                        </GroupBox>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
             <TabItem Header="{lex:Loc Other}">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel>

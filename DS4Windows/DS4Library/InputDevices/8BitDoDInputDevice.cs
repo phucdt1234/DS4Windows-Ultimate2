@@ -269,7 +269,6 @@ namespace DS4Windows.InputDevices
                     {
                         if (inputReportBuffer[0] != 0x01)
                         {
-                            readWaitEv.Reset();
                             inputReportErrorCount++;
                             if (inputReportErrorCount > 10)
                             {
@@ -283,15 +282,11 @@ namespace DS4Windows.InputDevices
                     }
                     else
                     {
-                        readWaitEv.Reset();
                         exitInputThread = true;
                         isDisconnecting = true;
                         Removal?.Invoke(this, EventArgs.Empty);
                         continue;
                     }
-
-                    readWaitEv.Wait();
-                    readWaitEv.Reset();
 
                     inputReportErrorCount = 0;
                     curtime = Stopwatch.GetTimestamp();

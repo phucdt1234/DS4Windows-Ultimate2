@@ -323,23 +323,16 @@ namespace DS4WinWPF.DS4Forms
                 DS4State tmpinterState = Program.rootHub.getDS4StateTemp(deviceNum);
                 long cntCalibrating = ds.SixAxis.CntCalibrating;
 
-                // Wait for controller to be in a wait period. Bound the wait:
-                // a device whose input loop is not signaling (disconnected,
-                // exotic read loop) must not freeze this reading screen.
-                if (ds.ReadWaitEv.Wait(TimeSpan.FromMilliseconds(100)))
-                {
-                    ds.ReadWaitEv.Reset();
-                }
-
-                // Make copy of current state values for UI thread
+                // No ReadWaitEv handshake here: the screen takes plain state
+                // snapshots. Coordinating with the input thread through the
+                // event stalled 1000 Hz devices (input thread + virtual
+                // controller froze when this tab was opened). A rare torn
+                // read on a 60 Hz debug screen is harmless.
                 tmpbaseState.CopyTo(baseState);
                 tmpinterState.CopyTo(interState);
 
                 if (deviceNum != profileDeviceNum)
                     Mapping.SetCurveAndDeadzone(profileDeviceNum, baseState, interState);
-
-                // Done with copying. Allow input thread to resume
-                ds.ReadWaitEv.Set();
 
                 Dispatcher.Invoke(() =>
                 {

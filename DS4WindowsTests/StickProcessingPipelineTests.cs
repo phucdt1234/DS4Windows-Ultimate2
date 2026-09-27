@@ -269,29 +269,45 @@ namespace DS4WindowsTests
     public partial class StickProcessingPipelineTests
     {
         [TestMethod]
-        public void RotationalJitter_RemainsVisibleAtFullDeflection()
+        public void RotationalJitter_FadesOutAtThreshold_StopsAtMax()
         {
             var s = new StickProcessingSettings
             {
                 Enabled = true,
                 Jitter = new RotationalJitterSettings { Enabled = true, Radius = 0.05, FrequencyHz = 50.0, ActivationThreshold = 1.0 },
             };
-            var state = new StickProcessingState();
 
-            double minX = 2.0, maxY = 0.0;
-            double x = 1.0, y = 0.0;
+            // Full deflection: NO jitter at all - aim stays exactly on the rim point
+            var state = new StickProcessingState();
             for (int i = 0; i < 40; i++)
             {
-                (x, y) = Run(1.0, 0.0, s, state, dt: 0.005); // quarter period per step
-                double mag = Math.Sqrt(x * x + y * y);
-                Assert.IsTrue(mag <= 1.0 + 1e-9, $"output must stay inside the unit circle, got {mag}");
-                minX = Math.Min(minX, x);
-                maxY = Math.Max(maxY, y);
+                double x = 1.0, y = 0.0;
+                (x, y) = Run(1.0, 0.0, s, state, dt: 0.005);
+                Assert.AreEqual(1.0, x, 1e-9, "no jitter allowed at full deflection (x)");
+                Assert.AreEqual(0.0, y, 1e-9, "no jitter allowed at full deflection (y)");
             }
 
-            // The tip must slide along the rim: x dips below 1 and y rises above 0
-            Assert.IsTrue(minX < 0.99, $"x should wobble below 1, min {minX}");
-            Assert.IsTrue(maxY > 0.02, $"y should wobble above 0, max {maxY}");
+            // Mid travel: full jitter present
+            state = new StickProcessingState();
+            double minY = 2.0;
+            for (int i = 0; i < 40; i++)
+            {
+                double x = 0.5, y = 0.0;
+                (x, y) = Run(0.5, 0.0, s, state, dt: 0.005);
+                minY = Math.Min(minY, y);
+            }
+            Assert.IsTrue(minY < 0.5 - 0.03, $"mid-travel jitter expected, min y {minY}");
+
+            // Near the threshold (95%): partial amplitude (half of full)
+            state = new StickProcessingState();
+            double maxY = 0.0;
+            for (int i = 0; i < 40; i++)
+            {
+                double x = 0.95, y = 0.0;
+                (x, y) = Run(0.95, 0.0, s, state, dt: 0.005);
+                maxY = Math.Max(maxY, Math.Abs(y));
+            }
+            Assert.IsTrue(maxY > 0.005 && maxY < 0.045, $"partial fade expected near threshold, max |y| {maxY}");
         }
     }
 }

@@ -272,10 +272,11 @@ namespace DS4Windows.StickProcessing
 
         /// <summary>
         /// Rotational jitter: injects a high-frequency micro-circle while the
-        /// stick sits inside the activation threshold region near neutral.
-        /// Near the rim (full deflection) the offset would be clipped by the
-        /// output clamp, so the result is rescaled back onto the unit circle:
-        /// the stick tip slides along the rim instead of losing the jitter.
+        /// stick magnitude is below the activation threshold. Full amplitude
+        /// below 90% of the threshold, fading to zero AT the threshold, so
+        /// sweeping the stick has no discontinuity and full-deflection aim
+        /// stays clean (no jitter at max). Near the rim the offset is
+        /// rescaled onto the unit circle instead of being clipped.
         /// </summary>
         public static void ApplyRotationalJitter(ref double x, ref double y, RotationalJitterSettings s,
             StickProcessingState state, double dtSeconds)
@@ -285,27 +286,39 @@ namespace DS4Windows.StickProcessing
                 return;
             }
 
+            // Keep the phase advancing even when not injecting (no jump on re-entry)
             double dt = dtSeconds > 0.0 ? dtSeconds : 0.0;
+            double frequency = Math.Max(0.0, s.FrequencyHz);
+            double angle = state.JitterPhase + 2.0 * Math.PI * frequency * dt;
+            state.JitterPhase = angle % (2.0 * Math.PI);
+
             double magnitude = Math.Sqrt(x * x + y * y);
-            double threshold = Math.Max(0.0, s.ActivationThreshold);
-
-            if (magnitude <= threshold)
+            double threshold = Math.Max(0.0, Math.Min(1.0, s.ActivationThreshold));
+            if (threshold <= 0.0 || magnitude >= threshold)
             {
-                double radius = Clamp01(s.Radius);
-                double frequency = Math.Max(0.0, s.FrequencyHz);
-                double angle = state.JitterPhase + 2.0 * Math.PI * frequency * dt;
-                state.JitterPhase = angle % (2.0 * Math.PI);
+                return;
+            }
 
-                x += radius * Math.Cos(angle);
-                y += radius * Math.Sin(angle);
+            double fadeStart = threshold * 0.9;
+            double amp = magnitude <= fadeStart
+                ? 1.0
+                : (threshold - magnitude) / Math.Max(1e-9, threshold - fadeStart);
 
-                double newMagnitude = Math.Sqrt(x * x + y * y);
-                if (newMagnitude > 1.0)
-                {
-                    double scale = 1.0 / newMagnitude;
-                    x *= scale;
-                    y *= scale;
-                }
+            double radius = Clamp01(s.Radius) * amp;
+            if (radius <= 0.0)
+            {
+                return;
+            }
+
+            x += radius * Math.Cos(angle);
+            y += radius * Math.Sin(angle);
+
+            double newMagnitude = Math.Sqrt(x * x + y * y);
+            if (newMagnitude > 1.0)
+            {
+                double scale = 1.0 / newMagnitude;
+                x *= scale;
+                y *= scale;
             }
         }
 

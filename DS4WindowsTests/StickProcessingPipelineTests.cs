@@ -293,5 +293,29 @@ namespace DS4WindowsTests
             Assert.IsTrue(minX < 0.99, $"x should wobble below 1, min {minX}");
             Assert.IsTrue(maxY > 0.02, $"y should wobble above 0, max {maxY}");
         }
+
+        [TestMethod]
+        public void RotationalJitter_StillFiresAtCornerMaxDeflection()
+        {
+            // Diagonal full push reaches magnitude sqrt(2) raw; the threshold
+            // check must treat it as "at the rim" (capped to 1.0), not beyond.
+            var s = new StickProcessingSettings
+            {
+                Enabled = true,
+                Jitter = new RotationalJitterSettings { Enabled = true, Radius = 0.05, FrequencyHz = 50.0, ActivationThreshold = 1.0 },
+            };
+            var state = new StickProcessingState();
+
+            double maxDev = 0.0;
+            for (int i = 0; i < 40; i++)
+            {
+                double x = 0.7071, y = 0.7071;
+                (x, y) = Run(0.7071, 0.7071, s, state, dt: 0.005);
+                double mag = Math.Sqrt(x * x + y * y);
+                Assert.IsTrue(mag <= 1.0 + 1e-9, $"output must stay inside the unit circle, got {mag}");
+                maxDev = Math.Max(maxDev, Math.Abs(mag - Math.Sqrt(0.5)));
+            }
+            Assert.IsTrue(maxDev > 0.02, $"corner jitter expected, max deviation {maxDev}");
+        }
     }
 }

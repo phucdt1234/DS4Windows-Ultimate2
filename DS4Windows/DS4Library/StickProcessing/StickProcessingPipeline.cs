@@ -289,7 +289,12 @@ namespace DS4Windows.StickProcessing
             double magnitude = Math.Sqrt(x * x + y * y);
             double threshold = Math.Max(0.0, s.ActivationThreshold);
 
-            if (magnitude <= threshold)
+            // Cap the magnitude at 1.0 for the threshold check: corner pushes
+            // (diagonal full deflection) reach sqrt(2) raw, and must still
+            // count as "at the rim", not beyond the activation region.
+            double effectiveMagnitude = Math.Min(1.0, magnitude);
+
+            if (effectiveMagnitude <= threshold)
             {
                 double radius = Clamp01(s.Radius);
                 double frequency = Math.Max(0.0, s.FrequencyHz);

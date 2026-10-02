@@ -67,6 +67,12 @@ namespace DS4Windows.InputDevices
         //   [21..22] gyro X   [23..24] gyro Y   [25..26] gyro Z
         private const float IMU_ACCEL_LSB_PER_G = 4096.0f;
 
+        // The pad reports at ~1000 Hz but the DS4Windows mapping/output stack
+        // was designed around 250 Hz. Fire the Report event every Nth report
+        // (N=2 -> 500 Hz) so mapping, the processing pipeline and the ViGEm
+        // submission are not overloaded; worst-case added latency is N ms.
+        private const int REPORT_PROCESS_DIVIDER = 2;
+
         private bool connectionOpened = false;
         private EightBitDoDInputControllerOptions nativeOptionsStore;
 
@@ -350,8 +356,11 @@ namespace DS4Windows.InputDevices
                     cState.Motion.populate(yawRaw, pitchRaw, rollRaw, aX, aY, aZ,
                         elapsedDeltaTime, pState.Motion);
 
-                    SixAxisEventArgs args = new SixAxisEventArgs(cState.ReportTimeStamp, cState.Motion);
-                    sixAxis.FireSixAxisEvent(args);
+                    if (sixAxis.HasSixAccelMovedSubscribers)
+                    {
+                        SixAxisEventArgs args = new SixAxisEventArgs(cState.ReportTimeStamp, cState.Motion);
+                        sixAxis.FireSixAxisEvent(args);
+                    }
 
                     if (conType == ConnectionType.USB)
                     {
@@ -384,7 +393,7 @@ namespace DS4Windows.InputDevices
                         }
                     }
 
-                    if (fireReport)
+                    if (fireReport && cState.PacketCounter % REPORT_PROCESS_DIVIDER == 0)
                     {
                         Report?.Invoke(this, EventArgs.Empty);
                     }

@@ -538,6 +538,8 @@ namespace DS4Windows
             return result;
         }
 
+        public bool HasSixAccelMovedSubscribers => SixAccelMoved != null;
+
         public void FireSixAxisEvent(SixAxisEventArgs args)
         {
             SixAccelMoved?.Invoke(this, args);
